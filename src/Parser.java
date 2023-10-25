@@ -6,13 +6,14 @@
  * This class will parse the input command and divide it into commandName and args
  */
 public class Parser {
-   private String commandName;
-   private String[] args;
+    private String commandName;
+    private String[] args;
 
 
     /**
      * This method will divide the input into commandName and args
-     * @param input  is the string command entered by the user
+     *
+     * @param input is the string command entered by the user
      * @return true if the command is valid and false otherwise
      */
     public boolean parse(String input) {
@@ -33,10 +34,11 @@ public class Parser {
         return true;
     }
 
-    public String getCommandName(){
+    public String getCommandName() {
         return commandName;
     }
-    public String[] getArgs(){
+
+    public String[] getArgs() {
         return args;
     }
 }
