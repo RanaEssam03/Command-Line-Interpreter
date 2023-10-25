@@ -1,5 +1,5 @@
 # Command-Line-Interpreter
 
-Nour: 
-Rana: pwd
-Noor: 
+- Nour: 
+- Rana: pwd
+- Noor: 
