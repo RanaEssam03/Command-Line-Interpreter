@@ -1,4 +1,4 @@
-/// Created at: 25/10/2023
+/// Created on: 25/10/2023
 /// Last modification: 26/10/2023
 
 import java.io.File;
@@ -20,17 +20,18 @@ public class Terminal {
     public static void main(String[] args) {
 
         Terminal terminal = new Terminal();
+        ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
         while (true) {
-            System.out.print("> ");
+            System.out.print(System.getProperty("user.dir")+" > ");
             Scanner scanner = new Scanner(System.in);
             String input = scanner.nextLine(); // here we get the input from the terminal
+            historyArray.add(input);
             if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
                 break;
             if (terminal.parser.parse(input)) { // if the paring is done correctly then choose the suitable action else continue the program without any action after print an error message
-                terminal.chooseCommandAction();
+                terminal.chooseCommandAction(historyArray);
             }
         }
-
     }
 
     /**
@@ -64,7 +65,6 @@ public class Terminal {
                 return;
             }
         }
-
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
         assert files != null;
@@ -81,8 +81,6 @@ public class Terminal {
             System.out.println(s);
 
     }
-
-
 
     /**
      * This method will change the current directory
@@ -204,10 +202,45 @@ public class Terminal {
         }
     }
 
+    public void history(ArrayList<String> historyArray){
+        if (parser.getArgs().length > 0){
+            System.out.println("Invalid number of arguments, expected 0 arguments");
+            return;
+        }
+        for (int i = 1; i <= historyArray.size(); i++){
+            System.out.print(i + " ");
+            System.out.println(historyArray.get(i-1));
+        }
+    }
+
+    public void rm(){
+        if (parser.getArgs().length > 1){
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File file = new File(parser.getArgs()[0]);
+        assert files != null;
+        ArrayList<String> arr = new ArrayList<>();
+        for (File f : files) {
+            arr.add(f.getName());
+        }
+        boolean del = false;
+        for (String s : arr){
+            if (s.equals(parser.getArgs()[0])){
+                del = file.delete();
+                return;
+            }
+        }
+        if (!del)
+            System.out.println("can't remove file: No such file or directory");
+    }
+
     /***
      * This method will choose the suitable command method to be called
      */
-    public void chooseCommandAction() {
+    public void chooseCommandAction(ArrayList<String> historyArray) {
         switch (parser.getCommandName()) {
             case "mkdir":
                 mkdir();
@@ -223,6 +256,12 @@ public class Terminal {
                 break;
             case "cd":
                 cd(parser.getArgs());
+                break;
+            case "history":
+                history(historyArray);
+                break;
+            case "rm":
+                rm();
                 break;
             default:
         }

@@ -2,4 +2,4 @@
 
 - Nour: mkdir
 - Rana: pwd, ls, ls -r, cd
-- Noor: 
+- Noor: cp, rm, history, wc

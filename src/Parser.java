@@ -30,7 +30,6 @@ public class Parser {
             System.out.println("Invalid command!");
             return false;
         }
-
         return true;
     }
 
