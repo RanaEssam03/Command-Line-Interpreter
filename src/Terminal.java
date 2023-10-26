@@ -8,7 +8,7 @@ import java.util.*;
 
 public class Terminal {
     Parser parser = new Parser();
-    String homeDic = System.getProperty("user.home");
+    final String homeDic = System.getProperty("user.home");
     String currentDirectory = System.getProperty("user.home");
 
     Terminal(){
