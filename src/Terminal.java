@@ -1,14 +1,12 @@
 /// Created at: 25/10/2023
-/// Last modification: 25/10/2023
+/// Last modification: 26/10/2023
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Scanner;
+import java.util.*;
 
 public class Terminal {
     Parser parser = new Parser();
+    String homeDic = System.getProperty("user.home");
     //Implement each command in a method, for example:
 
     /**
@@ -88,14 +86,30 @@ public class Terminal {
      * @param args the new directory
      */
     public void cd(String[] args) {
-        if (args.length != 1) {
+        if (args.length > 1) {
             System.out.println("Invalid number of arguments, expected 1 argument");
             return;
         }
+        else if (args.length == 0){
+            System.setProperty("user.dir", homeDic);
+            return;
+        }
+
+        if(Objects.equals(args[0], "..")){
+            File file = new File(System.getProperty("user.dir"));
+            System.setProperty("user.dir", file.getParent());
+            return;
+        }
+
         File file = new File(args[0]);
         if (!file.exists()) {
-            System.out.println("Invalid path");
-            return;
+            args[0] = System.getProperty("user.dir") + "\\" + args[0]; // if the dic is short path then add the current directory to the path
+            file = new File(args[0]);
+            if(!file.exists())
+            {
+                System.out.println(args[0] + " is not found !");
+                return;
+            }
         }
         System.setProperty("user.dir", args[0]);
     }
