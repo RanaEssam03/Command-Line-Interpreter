@@ -3,10 +3,10 @@
 
 //This enum contains all the commands that the user can enter in the terminal
 public enum Commands {
-    echo,
-    pwd,
+    echo, // Done
+    pwd, // Done
     cd,
-    ls,
-    mkdir,
+    ls, // Done
+    mkdir, // Done
 }
 

@@ -19,7 +19,7 @@ public class Terminal {
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
         while (true) {
-            System.out.print("user@user:~$ ");
+            System.out.print("> ");
             Scanner scanner = new Scanner(System.in);
             String input = scanner.nextLine(); // here we get the input from the terminal
             if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
@@ -88,7 +88,16 @@ public class Terminal {
      * @param args the new directory
      */
     public void cd(String[] args) {
-        // TODO
+        if (args.length != 1) {
+            System.out.println("Invalid number of arguments, expected 1 argument");
+            return;
+        }
+        File file = new File(args[0]);
+        if (!file.exists()) {
+            System.out.println("Invalid path");
+            return;
+        }
+        System.setProperty("user.dir", args[0]);
     }
 
     /***
@@ -98,8 +107,13 @@ public class Terminal {
         switch (parser.getCommandName()) {
             case "pwd":
                 pwd();
+                break;
             case "ls":
                 ls();
+                break;
+            case "cd":
+                cd(parser.getArgs());
+                break;
             default:
         }
     }
