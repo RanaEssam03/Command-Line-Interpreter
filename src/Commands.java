@@ -8,5 +8,6 @@ public enum Commands {
     cd, // Done
     ls, // Done
     mkdir, // Done
+    rmdir // Done
 }
 
