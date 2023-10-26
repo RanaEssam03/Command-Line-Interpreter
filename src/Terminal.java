@@ -2,7 +2,9 @@
 /// Last modification: 25/10/2023
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Terminal {
@@ -43,18 +45,42 @@ public class Terminal {
     }
 
     /**
-     * This method will print the files and directories in the current directory
+     * This method will print the files and directories in the current directory in alphabetical order or reverse order
      */
     public void ls() {
-        if(parser.getArgs().length != 0) {
+        boolean reverse = false;
+        if (parser.getArgs().length > 1) {
             System.out.println("Invalid number of arguments, expected 0 arguments");
             return;
         }
-        File currentDic = new File(".");
+        else if (parser.getArgs().length == 1){
+            if (parser.getArgs()[0].equals("-r")){
+                reverse = true;
+            }
+            else {
+                System.out.println("Invalid number of arguments, expected 0 arguments");
+                return;
+            }
+        }
+
+        File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
         assert files != null;
-        Arrays.stream(files).sorted().forEach(System.out::println);
-        }
+        ArrayList<String> ans = new ArrayList<>();
+        for(File file : files)
+                ans.add(file.getName());
+
+        if(reverse)
+            ans.sort(Comparator.reverseOrder());
+        else
+            ans.sort(String::compareTo);
+
+        for(String s : ans)
+            System.out.println(s);
+
+    }
+
+
 
     /**
      * This method will change the current directory
