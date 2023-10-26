@@ -1,5 +1,5 @@
 # Command-Line-Interpreter
 
-- Nour: 
-- Rana: pwd
+- Nour: mkdir
+- Rana: pwd, ls, ls -r, cd
 - Noor: 
