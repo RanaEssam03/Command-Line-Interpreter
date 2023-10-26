@@ -9,6 +9,7 @@ import java.util.*;
 public class Terminal {
     Parser parser = new Parser();
     String homeDic = System.getProperty("user.home");
+    String currentDirectory = System.getProperty("user.home");
     //Implement each command in a method, for example:
 
     /**
@@ -17,10 +18,11 @@ public class Terminal {
      * @param args the arguments passed to the program
      */
     public static void main(String[] args) {
+
         Terminal terminal = new Terminal();
         ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
         while (true) {
-            System.out.print("> ");
+            System.out.print(System.getProperty("user.dir")+" > ");
             Scanner scanner = new Scanner(System.in);
             String input = scanner.nextLine(); // here we get the input from the terminal
             historyArray.add(input);
@@ -114,6 +116,92 @@ public class Terminal {
         System.setProperty("user.dir", args[0]);
     }
 
+    /**
+     * This method returns the current path
+     */
+    String getCurrentPath(){
+        Path currRelativePath = Paths.get("");
+        String path = currRelativePath.toAbsolutePath().toString();
+        return path;
+    }
+
+    /**
+     * This method will create a directory or more in the current path or in a given path
+     */
+    public void mkdir(){
+        if(parser.getArgs().length == 0){
+            System.out.println("Expected an argument");
+        }
+        else{
+            for(String dir : parser.getArgs()){
+                File file;
+                if(dir.contains(":")){
+                    file = new File(dir);
+                }
+                else if(dir.charAt(0) == '.' && dir.charAt(1) == '.'){
+                    String newDir = dir.replace(".", "");
+                    file = new File(currentDirectory + newDir);
+                }
+                else if(dir.charAt(0) == '~'){
+                    String newDir = dir.replace("~", "");
+                    file = new File(homeDic + newDir);
+                }
+                else{
+                    String path = currentDirectory + '/' + dir;
+                    file = new File(path);
+                }
+                if(!file.exists()) {
+                    file.mkdir();
+                }
+                else{
+                    System.out.println("Directory already exists");
+                }
+            }
+        }
+    }
+    /**
+     * This method recursively delete all empty directories in the current directory
+     */
+    public void deleteDirectory(String currentDir){
+        File directory = new File(currentDir);
+        File[] listOfFiles = directory.listFiles();
+        if(listOfFiles.length == 0){
+            directory.delete();
+        }
+        else{
+            for(int i = 0; i < listOfFiles.length; i++){
+                File file = listOfFiles[i];
+                if(file.isDirectory()){
+                    deleteDirectory(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+    /**
+     * This method will delete either a specific empty directory or all empty directories in the current path
+     */
+    public void rmdir(){
+        if(parser.getArgs().length == 0){
+            System.out.println("Expected an argument");
+        }
+        else if(parser.getArgs().length > 1){
+            System.out.println("Command takes only one argument");
+        }
+        else{
+            if(Objects.equals(parser.getArgs()[0], "*")){
+                String path = getCurrentPath();
+                deleteDirectory(path);
+            }
+            else{
+                File targetDir = new File(parser.getArgs()[0]);
+                File[] listOfFiles = targetDir.listFiles();
+                if(listOfFiles.length == 0){
+                    targetDir.delete();
+                }
+            }
+        }
+    }
+
     public void history(ArrayList<String> historyArray){
         if (parser.getArgs().length > 0){
             System.out.println("Invalid number of arguments, expected 0 arguments");
@@ -154,6 +242,12 @@ public class Terminal {
      */
     public void chooseCommandAction(ArrayList<String> historyArray) {
         switch (parser.getCommandName()) {
+            case "mkdir":
+                mkdir();
+                break;
+            case "rmdir":
+                rmdir();
+                break;
             case "pwd":
                 pwd();
                 break;
