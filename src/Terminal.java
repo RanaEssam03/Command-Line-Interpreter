@@ -1,6 +1,8 @@
 /// Created at: 25/10/2023
 /// Last modification: 25/10/2023
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Terminal {
@@ -41,6 +43,20 @@ public class Terminal {
     }
 
     /**
+     * This method will print the files and directories in the current directory
+     */
+    public void ls() {
+        if(parser.getArgs().length != 0) {
+            System.out.println("Invalid number of arguments, expected 0 arguments");
+            return;
+        }
+        File currentDic = new File(".");
+        File[] files = currentDic.listFiles();
+        assert files != null;
+        Arrays.stream(files).sorted().forEach(System.out::println);
+        }
+
+    /**
      * This method will change the current directory
      *
      * @param args the new directory
@@ -56,7 +72,8 @@ public class Terminal {
         switch (parser.getCommandName()) {
             case "pwd":
                 pwd();
-            case "cd": // TODO;
+            case "ls":
+                ls();
             default:
         }
     }
