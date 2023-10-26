@@ -9,6 +9,7 @@ import java.util.*;
 public class Terminal {
     Parser parser = new Parser();
     String homeDic = System.getProperty("user.home");
+    String currentDirectory = System.getProperty("user.home");
     //Implement each command in a method, for example:
 
     /**
@@ -17,6 +18,7 @@ public class Terminal {
      * @param args the arguments passed to the program
      */
     public static void main(String[] args) {
+
         Terminal terminal = new Terminal();
         while (true) {
             System.out.print("> ");
@@ -135,13 +137,20 @@ public class Terminal {
         else{
             for(String dir : parser.getArgs()){
                 File file;
-                if(!dir.contains("\\")){
-                    String path = getCurrentPath();
-                    path = path + '/' + dir;
-                    file = new File(path);
+                if(dir.contains(":")){
+                    file = new File(dir);
+                }
+                else if(dir.charAt(0) == '.' && dir.charAt(1) == '.'){
+                    String newDir = dir.replace(".", "");
+                    file = new File(currentDirectory + newDir);
+                }
+                else if(dir.charAt(0) == '~'){
+                    String newDir = dir.replace("~", "");
+                    file = new File(homeDic + newDir);
                 }
                 else{
-                    file = new File(dir);
+                    String path = currentDirectory + '/' + dir;
+                    file = new File(path);
                 }
                 if(!file.exists()) {
                     file.mkdir();
