@@ -1,10 +1,12 @@
 /// Created at: 25/10/2023
-/// Last modification: 25/10/2023
+/// Last modification: 26/10/2023
 
-import java.util.Scanner;
+import java.io.File;
+import java.util.*;
 
 public class Terminal {
     Parser parser = new Parser();
+    String homeDic = System.getProperty("user.home");
     //Implement each command in a method, for example:
 
     /**
@@ -15,7 +17,7 @@ public class Terminal {
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
         while (true) {
-            System.out.print("user@user:~$ ");
+            System.out.print("> ");
             Scanner scanner = new Scanner(System.in);
             String input = scanner.nextLine(); // here we get the input from the terminal
             if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
@@ -41,12 +43,75 @@ public class Terminal {
     }
 
     /**
+     * This method will print the files and directories in the current directory in alphabetical order or reverse order
+     */
+    public void ls() {
+        boolean reverse = false;
+        if (parser.getArgs().length > 1) {
+            System.out.println("Invalid number of arguments, expected 0 arguments");
+            return;
+        }
+        else if (parser.getArgs().length == 1){
+            if (parser.getArgs()[0].equals("-r")){
+                reverse = true;
+            }
+            else {
+                System.out.println("Invalid number of arguments, expected 0 arguments");
+                return;
+            }
+        }
+
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        assert files != null;
+        ArrayList<String> ans = new ArrayList<>();
+        for(File file : files)
+                ans.add(file.getName());
+
+        if(reverse)
+            ans.sort(Comparator.reverseOrder());
+        else
+            ans.sort(String::compareTo);
+
+        for(String s : ans)
+            System.out.println(s);
+
+    }
+
+
+
+    /**
      * This method will change the current directory
      *
      * @param args the new directory
      */
     public void cd(String[] args) {
-        // TODO
+        if (args.length > 1) {
+            System.out.println("Invalid number of arguments, expected 1 argument");
+            return;
+        }
+        else if (args.length == 0){
+            System.setProperty("user.dir", homeDic);
+            return;
+        }
+
+        if(Objects.equals(args[0], "..")){
+            File file = new File(System.getProperty("user.dir"));
+            System.setProperty("user.dir", file.getParent());
+            return;
+        }
+
+        File file = new File(args[0]);
+        if (!file.exists()) {
+            args[0] = System.getProperty("user.dir") + "\\" + args[0]; // if the dic is short path then add the current directory to the path
+            file = new File(args[0]);
+            if(!file.exists())
+            {
+                System.out.println(args[0] + " is not found !");
+                return;
+            }
+        }
+        System.setProperty("user.dir", args[0]);
     }
 
     /***
@@ -56,7 +121,13 @@ public class Terminal {
         switch (parser.getCommandName()) {
             case "pwd":
                 pwd();
-            case "cd": // TODO;
+                break;
+            case "ls":
+                ls();
+                break;
+            case "cd":
+                cd(parser.getArgs());
+                break;
             default:
         }
     }
