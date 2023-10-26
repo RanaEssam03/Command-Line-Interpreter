@@ -10,6 +10,10 @@ public class Terminal {
     Parser parser = new Parser();
     String homeDic = System.getProperty("user.home");
     String currentDirectory = System.getProperty("user.home");
+
+    Terminal(){
+        System.setProperty("user.dir", homeDic);
+    }
     //Implement each command in a method, for example:
 
     /**
@@ -109,7 +113,7 @@ public class Terminal {
             file = new File(args[0]);
             if(!file.exists())
             {
-                System.out.println(args[0] + " is not found !");
+                System.out.println("ERROR : "+args[0] + " is not found !");
                 return;
             }
         }
