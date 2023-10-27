@@ -1,5 +1,5 @@
 # Command-Line-Interpreter
 
-- Nour: mkdir
-- Rana: pwd, ls, ls -r, cd
+- Nour: mkdir, rmdir
+- Rana: pwd, ls, ls -r, cd , ">" TODO
 - Noor: cp, rm, history, wc
