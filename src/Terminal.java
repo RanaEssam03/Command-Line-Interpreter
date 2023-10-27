@@ -9,8 +9,6 @@ import java.util.*;
 public class Terminal {
     Parser parser = new Parser();
     final String homeDic = System.getProperty("user.home");
-    String currentDirectory = System.getProperty("user.home");
-
     Terminal(){
         System.setProperty("user.dir", homeDic);
     }
@@ -121,15 +119,6 @@ public class Terminal {
     }
 
     /**
-     * This method returns the current path
-     */
-    String getCurrentPath(){
-        Path currRelativePath = Paths.get("");
-        String path = currRelativePath.toAbsolutePath().toString();
-        return path;
-    }
-
-    /**
      * This method will create a directory or more in the current path or in a given path
      */
     public void mkdir(){
@@ -142,16 +131,20 @@ public class Terminal {
                 if(dir.contains(":")){
                     file = new File(dir);
                 }
+                else if(dir.equals(".") || dir.equals("~")){
+                    System.out.println("Directory already exists");
+                    return;
+                }
                 else if(dir.charAt(0) == '.' && dir.charAt(1) == '.'){
                     String newDir = dir.replace(".", "");
-                    file = new File(currentDirectory + newDir);
+                    file = new File(System.getProperty("user.dir") + newDir);
                 }
                 else if(dir.charAt(0) == '~'){
                     String newDir = dir.replace("~", "");
                     file = new File(homeDic + newDir);
                 }
                 else{
-                    String path = currentDirectory + '/' + dir;
+                    String path = System.getProperty("user.dir") + '/' + dir;
                     file = new File(path);
                 }
                 if(!file.exists()) {
@@ -165,6 +158,8 @@ public class Terminal {
     }
     /**
      * This method recursively delete all empty directories in the current directory
+     *
+     * @param currentDir the current directory
      */
     public void deleteDirectory(String currentDir){
         File directory = new File(currentDir);
@@ -193,11 +188,33 @@ public class Terminal {
         }
         else{
             if(Objects.equals(parser.getArgs()[0], "*")){
-                String path = getCurrentPath();
-                deleteDirectory(path);
+                String currentDir = System.getProperty("user.dir");
+                deleteDirectory(currentDir);
             }
             else{
-                File targetDir = new File(parser.getArgs()[0]);
+                String givenPath = parser.getArgs()[0];
+                File targetDir;
+                if(givenPath.contains(":")){
+                    targetDir = new File(givenPath);
+                }
+                else if(givenPath.equals("~")){
+                    targetDir = new File(homeDic);
+                }
+                else if(givenPath.equals(".")){
+                    targetDir = new File(System.getProperty("user.dir"));
+                }
+                else if(givenPath.charAt(0) == '.' && givenPath.charAt(1) == '.'){
+                    String newDir = givenPath.replace(".", "");
+                    targetDir = new File(System.getProperty("user.dir") + newDir);
+                }
+                else if(givenPath.charAt(0) == '~'){
+                    String newDir = givenPath.replace("~", "");
+                    targetDir = new File(homeDic + newDir);
+                }
+                else{
+                    String path = System.getProperty("user.dir") + '/' + givenPath;
+                    targetDir = new File(path);
+                }
                 File[] listOfFiles = targetDir.listFiles();
                 if(listOfFiles.length == 0){
                     targetDir.delete();
