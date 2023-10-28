@@ -127,51 +127,18 @@ public class Terminal {
         }
         else{
             for(String dir : parser.getArgs()){
-                File file;
-                if(dir.contains(":")){
-                    file = new File(dir);
-                }
-                else if(dir.equals(".") || dir.equals("~")){
-                    System.out.println("Directory already exists");
-                    return;
-                }
-                else if(dir.charAt(0) == '.' && dir.charAt(1) == '.'){
-                    String newDir = dir.replace(".", "");
-                    file = new File(System.getProperty("user.dir") + newDir);
-                }
-                else if(dir.charAt(0) == '~'){
-                    String newDir = dir.replace("~", "");
-                    file = new File(homeDic + newDir);
-                }
-                else{
-                    String path = System.getProperty("user.dir") + '/' + dir;
-                    file = new File(path);
+                File file = new File(dir);
+                if(!file.isAbsolute()) {
+                    Path currentDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+                    Path relPath = Paths.get(dir);
+                    Path newResultPath = currentDir.resolve(relPath);
+                    file = new File(newResultPath.toString());
                 }
                 if(!file.exists()) {
                     file.mkdir();
                 }
                 else{
                     System.out.println("Directory already exists");
-                }
-            }
-        }
-    }
-    /**
-     * This method recursively delete all empty directories in the current directory
-     *
-     * @param currentDir the current directory
-     */
-    public void deleteDirectory(String currentDir){
-        File directory = new File(currentDir);
-        File[] listOfFiles = directory.listFiles();
-        if(listOfFiles.length == 0){
-            directory.delete();
-        }
-        else{
-            for(int i = 0; i < listOfFiles.length; i++){
-                File file = listOfFiles[i];
-                if(file.isDirectory()){
-                    deleteDirectory(file.getAbsolutePath());
                 }
             }
         }
@@ -187,41 +154,56 @@ public class Terminal {
             System.out.println("Command takes only one argument");
         }
         else{
+            String givenPath;
+            File targetDir;
             if(Objects.equals(parser.getArgs()[0], "*")){
-                String currentDir = System.getProperty("user.dir");
-                deleteDirectory(currentDir);
+                givenPath = System.getProperty("user.dir");
+                targetDir = new File(givenPath);
+                File [] listOfFiles = targetDir.listFiles();
+                assert listOfFiles != null;
+                for(File f : listOfFiles){
+                    if(f.isDirectory()){
+                        File[] fList = f.listFiles();
+                        assert fList != null;
+                        if(fList.length == 0){
+                            f.delete();
+                        }
+                    }
+                }
             }
             else{
-                String givenPath = parser.getArgs()[0];
-                File targetDir;
-                if(givenPath.contains(":")){
-                    targetDir = new File(givenPath);
+                givenPath = parser.getArgs()[0];
+                targetDir = new File(givenPath);
+                if(!targetDir.isAbsolute()) {
+                    Path currentDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+                    Path relPath = Paths.get(givenPath);
+                    Path newResultPath = currentDir.resolve(relPath);
+                    targetDir = new File(newResultPath.toString());
                 }
-                else if(givenPath.equals("~")){
-                    targetDir = new File(homeDic);
-                }
-                else if(givenPath.equals(".")){
-                    targetDir = new File(System.getProperty("user.dir"));
-                }
-                else if(givenPath.charAt(0) == '.' && givenPath.charAt(1) == '.'){
-                    String newDir = givenPath.replace(".", "");
-                    targetDir = new File(System.getProperty("user.dir") + newDir);
-                }
-                else if(givenPath.charAt(0) == '~'){
-                    String newDir = givenPath.replace("~", "");
-                    targetDir = new File(homeDic + newDir);
-                }
-                else{
-                    String path = System.getProperty("user.dir") + '/' + givenPath;
-                    targetDir = new File(path);
+                if(!targetDir.exists()){
+                    System.out.println("Directory doesn't exist");
+                    return;
                 }
                 File[] listOfFiles = targetDir.listFiles();
+                assert listOfFiles != null;
                 if(listOfFiles.length == 0){
                     targetDir.delete();
                 }
             }
         }
     }
+
+    public void echo(){
+        if(parser.getArgs().length == 0){
+            System.out.println("Expected an argument");
+        }
+        else{
+            for(String arg : parser.getArgs()){
+                System.out.println(arg);
+            }
+        }
+    }
+
 
     public void history(ArrayList<String> historyArray){
         if (parser.getArgs().length > 0){
@@ -263,6 +245,9 @@ public class Terminal {
      */
     public void chooseCommandAction(ArrayList<String> historyArray) {
         switch (parser.getCommandName()) {
+            case "echo":
+                echo();
+                break;
             case "mkdir":
                 mkdir();
                 break;
