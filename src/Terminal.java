@@ -1,6 +1,7 @@
 /// Created on: 25/10/2023
-/// Last modification: 26/10/2023
+/// Last modification: 28/10/2023
 
+import java.io.FileNotFoundException;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +22,7 @@ public class Terminal {
      *
      * @param args the arguments passed to the program
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
         Terminal terminal = new Terminal();
         ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
@@ -218,33 +219,63 @@ public class Terminal {
     }
 
     public void rm(){
-        if (parser.getArgs().length > 1){
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 1){
             System.out.println("Invalid number of arguments, expected 1 arguments");
             return;
         }
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
-        File file = new File(parser.getArgs()[0]);
+        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        //makes sure that the files in the directory the user is currently working on is not empty
         assert files != null;
-        ArrayList<String> arr = new ArrayList<>();
-        for (File f : files) {
-            arr.add(f.getName());
-        }
         boolean del = false;
-        for (String s : arr){
-            if (s.equals(parser.getArgs()[0])){
-                del = file.delete();
+        for (File f : files) {
+            if (f.getAbsolutePath().equals(file.getAbsolutePath())){
+                del = f.delete();
+                if (del)
+                    return;
+            }
+
+        }
+        // else display that it has not been found/ does not exist
+        System.out.println("can't remove file: No such file or directory");
+    }
+
+    void wc() throws FileNotFoundException {
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 1){
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
+        for (File f : files) {
+            if (f.getAbsolutePath().equals(file.getAbsolutePath())){
+                int countLines = 0, countWords = 0, countChars = 0;
+                Scanner sc = new Scanner(file);
+                while (sc.hasNextLine()){
+                    String line = sc.nextLine();
+                    countLines++;
+                    String[] words = line.split(" ");
+                    countWords += words.length;
+                    for (String word : words){
+                        countChars += word.length();
+                    }
+                }
+                System.out.println(countLines + " " + countWords + " " + countChars + " " + file.getName());
                 return;
             }
         }
-        if (!del)
-            System.out.println("can't remove file: No such file or directory");
+        System.out.println("No such file or directory");
     }
 
     /***
      * This method will choose the suitable command method to be called
      */
-    public void chooseCommandAction(ArrayList<String> historyArray) {
+    public void chooseCommandAction(ArrayList<String> historyArray) throws FileNotFoundException {
         switch (parser.getCommandName()) {
             case "mkdir":
                 mkdir();
@@ -266,6 +297,9 @@ public class Terminal {
                 break;
             case "rm":
                 rm();
+                break;
+            case "wc":
+                wc();
                 break;
             default:
         }
