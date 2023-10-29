@@ -1,7 +1,7 @@
 /// Created on: 25/10/2023
 /// Last modification: 26/10/2023
 
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -19,7 +19,7 @@ public class Terminal {
      *
      * @param args the arguments passed to the program
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Terminal terminal = new Terminal();
         ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
@@ -193,6 +193,55 @@ public class Terminal {
         }
     }
 
+    public void cat() throws IOException {
+        if(parser.getArgs().length == 0){
+            System.out.println("Expected an argument");
+        }
+        else if(parser.getArgs().length > 2){
+            System.out.println("Command takes no more than two arguments");
+        }
+        else{
+            Path currentDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+            Path targetFile = Paths.get(parser.getArgs()[0]);
+            Path newResultPath = currentDir.resolve(targetFile);
+            File file1 = new File(newResultPath.toString());
+            if(parser.getArgs().length == 1){
+                if(file1.exists()){
+                    BufferedReader read = new BufferedReader(new FileReader(file1));
+                    String line;
+                    while((line = read.readLine()) != null){
+                        System.out.println(line);
+                    }
+                }
+                else{
+                    System.out.println(parser.getArgs()[0] + " doesn't exist");
+                }
+            }
+            else{
+                Path targetFile2 = Paths.get(parser.getArgs()[1]);
+                Path newResultPath2 = currentDir.resolve(targetFile2);
+                File file2 = new File(newResultPath2.toString());
+                if(file1.exists() && file2.exists()){
+                    BufferedReader read = new BufferedReader(new FileReader(file1));
+                    String line;
+                    while((line = read.readLine()) != null){
+                        System.out.println(line);
+                    }
+                    BufferedReader read2 = new BufferedReader(new FileReader(file2));
+                    while((line = read2.readLine()) != null){
+                        System.out.println(line);
+                    }
+                }
+                else if(!file1.exists()){
+                    System.out.println(parser.getArgs()[0] + " doesn't exist");
+                }
+                else{
+                    System.out.println(parser.getArgs()[1] + " doesn't exist");
+                }
+            }
+        }
+    }
+
     public void echo(){
         if(parser.getArgs().length == 0){
             System.out.println("Expected an argument");
@@ -243,8 +292,11 @@ public class Terminal {
     /***
      * This method will choose the suitable command method to be called
      */
-    public void chooseCommandAction(ArrayList<String> historyArray) {
+    public void chooseCommandAction(ArrayList<String> historyArray) throws IOException {
         switch (parser.getCommandName()) {
+            case "cat":
+                cat();
+                break;
             case "echo":
                 echo();
                 break;
