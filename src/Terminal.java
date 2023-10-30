@@ -1,8 +1,7 @@
 /// Created on: 25/10/2023
-/// Last modification: 28/10/2023
+/// Last modification: 30/10/2023
 
-import java.io.FileNotFoundException;
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -22,7 +21,7 @@ public class Terminal {
      *
      * @param args the arguments passed to the program
      */
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
 
         Terminal terminal = new Terminal();
         ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
@@ -272,10 +271,60 @@ public class Terminal {
         System.out.println("No such file or directory");
     }
 
+    void cp() throws IOException {
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 2){
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File file1 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        File file2 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[1]);
+        assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
+        boolean f1 = false, f2 = false;
+        for (File f : files){
+            if(f.getAbsolutePath().equals(file1.getAbsolutePath())){
+                f1 = true;
+            }
+            if (f.getAbsolutePath().equals(file2.getAbsolutePath())){
+                f2 = true;
+            }
+        }
+        if (f1 && f2){
+            FileInputStream inFile = new FileInputStream(file1);
+            FileOutputStream outFile = new FileOutputStream(file2);
+
+            try {
+                int n;
+                while ((n = inFile.read()) != -1){
+                    outFile.write(n);
+                }
+            }
+            finally {
+                if (inFile != null) {
+                    inFile.close();
+                }
+                if (outFile != null) {
+                    outFile.close();
+                }
+            }
+        }
+        else if (f1){
+            System.out.println(parser.getArgs()[1] + "does not exist");
+        }
+        else if (f2){
+            System.out.println(parser.getArgs()[0] + "does not exist");
+        }
+        else{
+            System.out.println("None of the files exist");
+        }
+    }
+
     /***
      * This method will choose the suitable command method to be called
      */
-    public void chooseCommandAction(ArrayList<String> historyArray) throws FileNotFoundException {
+    public void chooseCommandAction(ArrayList<String> historyArray) throws IOException {
         switch (parser.getCommandName()) {
             case "mkdir":
                 mkdir();
@@ -300,6 +349,9 @@ public class Terminal {
                 break;
             case "wc":
                 wc();
+                break;
+            case "cp":
+                cp();
                 break;
             default:
         }
