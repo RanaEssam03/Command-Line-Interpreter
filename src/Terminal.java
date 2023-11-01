@@ -42,20 +42,26 @@ public class Terminal {
 
     }
 
+    /**
+     * This method will execute the command the user entered
+     * @param historyArray the array list that contains the history of the commands
+     * @param command the command the user entered
+     * @throws IOException in case of an error in the file
+     */
     public void executeCommand(ArrayList<String> historyArray, String command) throws IOException {
         if (parser.parse(command)) {
             if (parser.getFileName() != null) {
                 File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
-                if (file.exists()) {
-                } else {
+                if (!file.exists() && parser.getOperator().equals(">>")) {
                     System.out.println("ERROR :  " + parser.getFileName() + " doesn't exists! ");
                     return;
+                } else if(!file.exists() && parser.getOperator().equals(">")) {
+                    file.createNewFile();
                 }
             }
             // if the paring is done correctly then choose the suitable action else continue the program without any action after print an error message
             chooseCommandAction(historyArray);
         }
-
 
     }
 
