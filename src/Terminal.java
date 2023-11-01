@@ -319,10 +319,15 @@ public class Terminal {
             if (parser.getArgs().length == 1) {
                 if (file1.exists()) {
                     BufferedReader read = new BufferedReader(new FileReader(file1));
+                    String finalStr = "";
                     String line;
                     while ((line = read.readLine()) != null) {
-                        System.out.println(line);
+                        finalStr += line + "\n";
                     }
+                    if (parser.getFileName() == null)
+                        System.out.println(finalStr);
+                    else
+                        writeToFile(finalStr);
                 } else {
                     System.out.println(parser.getArgs()[0] + " doesn't exist");
                 }
@@ -332,18 +337,26 @@ public class Terminal {
                 File file2 = new File(newResultPath2.toString());
                 if (file1.exists() && file2.exists()) {
                     BufferedReader read = new BufferedReader(new FileReader(file1));
+                    String finalStr = "";
                     String line;
                     while ((line = read.readLine()) != null) {
-                        System.out.println(line);
+                        finalStr += line + "\n";
                     }
                     BufferedReader read2 = new BufferedReader(new FileReader(file2));
                     while ((line = read2.readLine()) != null) {
-                        System.out.println(line);
+                        finalStr += line + "\n";
                     }
+                    if (parser.getFileName() == null)
+                        System.out.println(finalStr);
+                    else
+                        writeToFile(finalStr);
                 } else if (!file1.exists()) {
                     System.out.println(parser.getArgs()[0] + " doesn't exist");
-                } else {
+                } else if(!file2.exists()){
                     System.out.println(parser.getArgs()[1] + " doesn't exist");
+                }
+                else{
+                    System.out.println(parser.getArgs()[0] + " and " + parser.getArgs()[1] + " don't exist");
                 }
             }
         }
