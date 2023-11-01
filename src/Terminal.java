@@ -2,6 +2,7 @@
 /// Last modification: 1/11/2023
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class Terminal {
 
     /**
      * This is the main function where the terminal is running and takes input from the user
+     *
      * @param args the arguments passed to the program
      */
     public static void main(String[] args) throws IOException {
@@ -33,17 +35,23 @@ public class Terminal {
             historyArray.add(input);
             if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
                 break;
-            if (terminal.parser.parse(input)) {
 
-                // if the paring is done correctly then choose the suitable action else continue the program without any action after print an error message
-                terminal.chooseCommandAction(historyArray);
-            }
+            terminal.executeCommand(historyArray, input);
+
         }
 
     }
 
-    public void executeCommand( ArrayList<String> historyArray, String command) throws IOException {
+    public void executeCommand(ArrayList<String> historyArray, String command) throws IOException {
         if (parser.parse(command)) {
+            if (parser.getFileName() != null) {
+                File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+                if (file.exists()) {
+                } else {
+                    System.out.println("ERROR :  " + parser.getFileName() + " doesn't exists! ");
+                    return;
+                }
+            }
             // if the paring is done correctly then choose the suitable action else continue the program without any action after print an error message
             chooseCommandAction(historyArray);
         }
@@ -56,61 +64,70 @@ public class Terminal {
      */
     public void chooseCommandAction(ArrayList<String> historyArray) throws IOException {
 
-        switch (parser.getCommandName()) {
-            case "cat":
-                cat();
-                break;
-            case "echo":
-                echo();
-                break;
-            case "mkdir":
-                mkdir();
-                break;
-            case "rmdir":
-                rmdir();
-                break;
-            case "pwd":
-                pwd();
-                break;
-            case "ls":
-                ls();
-                break;
-            case "cd":
-                cd(parser.getArgs());
-                break;
-            case "history":
-                history(historyArray);
-                break;
-            case "rm":
-                rm();
-                break;
-            case "wc":
-                wc();
-                break;
-            case "cp":
-                cp();
-                break;
-            default:
+        try {
+
+            switch (parser.getCommandName()) {
+                case "cat":
+                    cat();
+                    break;
+                case "echo":
+                    echo();
+                    break;
+                case "mkdir":
+                    mkdir();
+                    break;
+                case "rmdir":
+                    rmdir();
+                    break;
+                case "pwd":
+                    pwd();
+                    break;
+                case "ls":
+                    ls();
+                    break;
+                case "cd":
+                    cd(parser.getArgs());
+                    break;
+                case "history":
+                    history(historyArray);
+                    break;
+                case "rm":
+                    rm();
+                    break;
+                case "wc":
+                    wc();
+                    break;
+                case "cp":
+                    cp();
+                    break;
+                default:
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid command");
         }
     }
 
     /**
      * This method will print the current directory
      */
-    public void pwd() {
+    public void pwd() throws IOException {
         if (parser.getArgs().length != 0) {
             System.out.println("Invalid number of arguments, expected 0 arguments");
             return;
         }
         String currentDic = System.getProperty("user.dir");
-        System.out.println("Path\n____");
-        System.out.println(currentDic);
+
+        if (parser.getFileName() == null)
+            System.out.println(currentDic);
+        else
+            writeToFile(currentDic);
+
     }
 
     /**
      * This method will print the files and directories in the current directory in alphabetical order or reverse order
      */
-    public void ls() {
+    public void ls() throws IOException {
         boolean reverse = false;
         if (parser.getArgs().length > 1) {
             System.out.println("Invalid number of arguments, expected 0 arguments");
@@ -135,8 +152,14 @@ public class Terminal {
         else
             ans.sort(String::compareTo);
 
+        String finalStr = "";
         for (String s : ans)
-            System.out.println(s);
+            finalStr += s + "\n";
+
+        if(parser.getFileName() == null)
+            System.out.println(finalStr);
+        else
+            writeToFile(finalStr);
 
     }
 
@@ -146,6 +169,8 @@ public class Terminal {
      * @param args the new directory
      */
     public void cd(String[] args) {
+        CheckContentClearing(); // clears the content of the file if the operator is ">"
+
         if (args.length > 1) {
             System.out.println("Invalid number of arguments");
             return;
@@ -173,14 +198,21 @@ public class Terminal {
             }
         } else {
             File file = new File(args[0]);
-            if (!file.exists()) {
+
+            if (!file.isAbsolute()) {
+
                 args[0] = System.getProperty("user.dir") + "\\" + args[0]; // if the dic is short path then add the current directory to the path
                 file = new File(args[0]);
                 if (!file.exists()) {
-                    System.out.println("ERROR : " + args[0] + " is not found !");
+                    System.out.println("ERROR : " + args[0] + "\\" +
+                            "" + " is not found !");
                     return;
                 }
+                if (!file.isDirectory()) {
+                    throw new IllegalArgumentException();
+                }
             }
+
             System.setProperty("user.dir", args[0]);
         }
     }
@@ -189,6 +221,8 @@ public class Terminal {
      * This method will create a directory or more in the current path or in a given path
      */
     public void mkdir() {
+        CheckContentClearing(); // clears the content of the file if the operator is ">"
+
         if (parser.getArgs().length == 0) {
             System.out.println("Expected an argument");
         } else {
@@ -213,6 +247,7 @@ public class Terminal {
      * This method will delete either a specific empty directory or all empty directories in the current path
      */
     public void rmdir() {
+        CheckContentClearing(); // clears the content of the file if the operator is ">"
         if (parser.getArgs().length == 0) {
             System.out.println("Expected an argument");
         } else if (parser.getArgs().length > 1) {
@@ -305,19 +340,25 @@ public class Terminal {
     /**
      * This method will print the arguments passed to it
      */
-    public void echo() {
+    public void echo() throws IOException {
         if (parser.getArgs().length == 0) {
             System.out.println("Expected an argument");
         } else {
+            String finalStr = "";
             for (String arg : parser.getArgs()) {
-                System.out.println(arg);
+                finalStr += arg + "\n";
             }
+            if(parser.getFileName() == null)
+                System.out.println(finalStr);
+            else
+                writeToFile(finalStr);
         }
     }
 
 
     /**
      * This method will print the history of the commands the user wrote
+     *
      * @param historyArray the array list that contains the history of the commands
      */
     public void history(ArrayList<String> historyArray) {
@@ -335,6 +376,8 @@ public class Terminal {
      * This method will delete a file from the current directory
      */
     public void rm() {
+        CheckContentClearing();
+
         // checks for the number of arguments written
         if (parser.getArgs().length != 1) {
             System.out.println("Invalid number of arguments, expected 1 arguments");
@@ -362,6 +405,7 @@ public class Terminal {
      * This method will count the number of lines, words and characters in a file
      */
     void wc() throws FileNotFoundException {
+
         // checks for the number of arguments written
         if (parser.getArgs().length != 1) {
             System.out.println("Invalid number of arguments, expected 1 arguments");
@@ -395,6 +439,7 @@ public class Terminal {
      * This method will copy the content of a file to another file
      */
     void cp() throws IOException {
+        CheckContentClearing();
         // checks for the number of arguments written
         if (parser.getArgs().length != 2) {
             System.out.println("Invalid number of arguments, expected 1 arguments");
@@ -439,5 +484,36 @@ public class Terminal {
             System.out.println("None of the files exist");
         }
     }
+
+    public void CheckContentClearing() {
+        if (!Objects.equals(parser.getOperator(), ">"))
+            return;
+
+        try {
+
+
+            // Defining the file name of the file
+            Path fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+            // Writing into the file
+            Files.writeString(fileName, "");
+
+        } catch (IOException e) {
+
+        }
+    }
+
+    void writeToFile(String content) throws IOException {
+        boolean append = parser.getOperator().equals(">>");
+        Path fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+        if (append) {
+            String fullContent = Files.readString(fileName);
+            fullContent += content;
+            Files.writeString(fileName, fullContent);
+
+        } else {
+            Files.writeString(fileName, content);
+        }
+    }
+
 
 }

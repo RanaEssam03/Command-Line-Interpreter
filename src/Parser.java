@@ -25,6 +25,7 @@ public class Parser {
      */
     public boolean parse(String input) {
         fileName = null;
+        operator = null;
         String[] inputArray = input.split(" ");
         commandName = inputArray[0];
         if(commandName.equals(">") || commandName.equals(">>")) {
@@ -35,7 +36,7 @@ public class Parser {
             args = new String[inputArray.length - 1];
             for (int i = 1; i < inputArray.length; i++) {
                 args[i - 1] = inputArray[i];
-                if (inputArray [i].equals(">")) {
+                if (inputArray [i].equals(">") || inputArray[i].equals(">>")) {
 
                     if(i != 1)
                         args = Arrays.copyOfRange(inputArray, 1, i);
@@ -45,12 +46,9 @@ public class Parser {
 
                     if(i == inputArray.length - 2) {
                         fileName = inputArray[i+1];
-                        operator = ">";
+                        operator = inputArray[i];
                     }
-                    else if(i+1 == inputArray.length - 3 && inputArray[i+1].equals(">>")) {
-                        fileName = inputArray[i+2];
-                        operator = ">>";
-                    }
+
                     else {
                         throw new IllegalArgumentException();
                     }
