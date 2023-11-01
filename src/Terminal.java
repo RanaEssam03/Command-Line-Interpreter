@@ -1,5 +1,5 @@
 /// Created on: 25/10/2023
-/// Last modification: 26/10/2023
+/// Last modification: 30/10/2023
 
 import java.io.*;
 import java.nio.file.Path;
@@ -266,27 +266,107 @@ public class Terminal {
     }
 
     public void rm(){
-        if (parser.getArgs().length > 1){
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 1){
             System.out.println("Invalid number of arguments, expected 1 arguments");
             return;
         }
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
-        File file = new File(parser.getArgs()[0]);
+        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        //makes sure that the files in the directory the user is currently working on is not empty
         assert files != null;
-        ArrayList<String> arr = new ArrayList<>();
-        for (File f : files) {
-            arr.add(f.getName());
-        }
         boolean del = false;
-        for (String s : arr){
-            if (s.equals(parser.getArgs()[0])){
-                del = file.delete();
+        for (File f : files) {
+            if (f.getAbsolutePath().equals(file.getAbsolutePath())){
+                del = f.delete();
+                if (del)
+                    return;
+            }
+
+        }
+        // else display that it has not been found/ does not exist
+        System.out.println("can't remove file: No such file or directory");
+    }
+
+    void wc() throws FileNotFoundException {
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 1){
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
+        for (File f : files) {
+            if (f.getAbsolutePath().equals(file.getAbsolutePath())){
+                int countLines = 0, countWords = 0, countChars = 0;
+                Scanner sc = new Scanner(file);
+                while (sc.hasNextLine()){
+                    String line = sc.nextLine();
+                    countLines++;
+                    String[] words = line.split(" ");
+                    countWords += words.length;
+                    for (String word : words){
+                        countChars += word.length();
+                    }
+                }
+                System.out.println(countLines + " " + countWords + " " + countChars + " " + file.getName());
                 return;
             }
         }
-        if (!del)
-            System.out.println("can't remove file: No such file or directory");
+        System.out.println("No such file or directory");
+    }
+
+    void cp() throws IOException {
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 2){
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File file1 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        File file2 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[1]);
+        assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
+        boolean f1 = false, f2 = false;
+        for (File f : files){
+            if(f.getAbsolutePath().equals(file1.getAbsolutePath())){
+                f1 = true;
+            }
+            if (f.getAbsolutePath().equals(file2.getAbsolutePath())){
+                f2 = true;
+            }
+        }
+        if (f1 && f2){
+            FileInputStream inFile = new FileInputStream(file1);
+            FileOutputStream outFile = new FileOutputStream(file2);
+
+            try {
+                int n;
+                while ((n = inFile.read()) != -1){
+                    outFile.write(n);
+                }
+            }
+            finally {
+                if (inFile != null) {
+                    inFile.close();
+                }
+                if (outFile != null) {
+                    outFile.close();
+                }
+            }
+        }
+        else if (f1){
+            System.out.println(parser.getArgs()[1] + "does not exist");
+        }
+        else if (f2){
+            System.out.println(parser.getArgs()[0] + "does not exist");
+        }
+        else{
+            System.out.println("None of the files exist");
+        }
     }
 
     /***
@@ -320,6 +400,12 @@ public class Terminal {
                 break;
             case "rm":
                 rm();
+                break;
+            case "wc":
+                wc();
+                break;
+            case "cp":
+                cp();
                 break;
             default:
         }
