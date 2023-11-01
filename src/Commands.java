@@ -3,7 +3,7 @@
 
 //This enum contains all the commands that the user can write on the terminal
 public enum Commands {
-    echo,
+    echo, //Done
     pwd, // Done
     cd, // Done
     ls, // Done
@@ -11,6 +11,7 @@ public enum Commands {
     rmdir, // Done
     history, // Done
     rm, // Done
+    cat // Done
 
     //" >" TODO
 }
