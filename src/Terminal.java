@@ -156,7 +156,7 @@ public class Terminal {
         for (String s : ans)
             finalStr += s + "\n";
 
-        if(parser.getFileName() == null)
+        if (parser.getFileName() == null)
             System.out.println(finalStr);
         else
             writeToFile(finalStr);
@@ -201,7 +201,10 @@ public class Terminal {
 
             if (!file.isAbsolute()) {
 
-                args[0] = System.getProperty("user.dir") + "\\" + args[0]; // if the dic is short path then add the current directory to the path
+                Path currentDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+                Path relPath = Paths.get(args[0]);
+                args[0] = currentDir.resolve(relPath).toString();// if the dic is short path then add the current directory to the path
+
                 file = new File(args[0]);
                 if (!file.exists()) {
                     System.out.println("ERROR : " + args[0] + "\\" +
@@ -348,7 +351,7 @@ public class Terminal {
             for (String arg : parser.getArgs()) {
                 finalStr += arg + "\n";
             }
-            if(parser.getFileName() == null)
+            if (parser.getFileName() == null)
                 System.out.println(finalStr);
             else
                 writeToFile(finalStr);
