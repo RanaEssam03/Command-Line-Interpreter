@@ -2,7 +2,6 @@
 /// Last modification: 1/11/2023
 
 import java.io.*;
-import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +14,8 @@ public class Terminal {
     final String homeDic = System.getProperty("user.home");
     Parser parser = new Parser();
 
-    /**_______________________________________________________________________
+    /**
+     * _______________________________________________________________________
      * This is the constructor of the class
      * it sets the current directory to the home directory
      */
@@ -24,8 +24,10 @@ public class Terminal {
     }
 
 
-    /**_______________________________________________________________________
+    /**
+     * _______________________________________________________________________
      * This is the main function where the terminal is running and takes input from the user
+     *
      * @param args the arguments passed to the program
      */
     public static void main(String[] args) throws IOException {
@@ -46,20 +48,27 @@ public class Terminal {
 
     }
 
-    /**____________________________________________________________________________
+    /**
+     * ____________________________________________________________________________
      * This method will execute the command the user entered
+     *
      * @param historyArray the array list that contains the history of the commands
-     * @param command the command the user entered
+     * @param command      the command the user entered
      * @throws IOException in case of an error in the file
      */
     public void executeCommand(ArrayList<String> historyArray, String command) throws IOException {
         if (parser.parse(command)) {
             if (parser.getFileName() != null) {
-                File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+                File file ;
+                File current =new File(parser.getFileName());
+                if(!current.isAbsolute())
+                    file = new File(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+                else
+                    file = current;
                 if (!file.exists() && parser.getOperator().equals(">>")) {
                     System.out.println("ERROR :  " + parser.getFileName() + " doesn't exists! ");
                     return;
-                } else if(!file.exists() && parser.getOperator().equals(">")) {
+                } else if (!file.exists() && parser.getOperator().equals(">")) {
                     file.createNewFile();
                 }
             }
@@ -137,7 +146,8 @@ public class Terminal {
 
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will print the files and directories in the current directory in alphabetical order or reverse order
      */
     public void ls() throws IOException {
@@ -176,7 +186,8 @@ public class Terminal {
 
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will change the current directory
      *
      * @param args the new directory
@@ -228,12 +239,18 @@ public class Terminal {
                     throw new IllegalArgumentException();
                 }
             }
+            File finalPath = new File(args[0]);
 
-            System.setProperty("user.dir", args[0]);
+            if(finalPath.isDirectory())
+                System.setProperty("user.dir", args[0]);
+            else{
+                System.out.println("ERROR: Invalid Directory!");
+            }
         }
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will create a directory or more in the current path or in a given path
      */
     public void mkdir() {
@@ -259,7 +276,8 @@ public class Terminal {
         }
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will delete either a specific empty directory or all empty directories in the current path
      */
     public void rmdir() {
@@ -307,7 +325,8 @@ public class Terminal {
         }
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will print the content of a file or more
      */
     public void cat() throws IOException {
@@ -356,17 +375,17 @@ public class Terminal {
                         writeToFile(finalStr);
                 } else if (!file1.exists()) {
                     System.out.println(parser.getArgs()[0] + " doesn't exist");
-                } else if(!file2.exists()){
+                } else if (!file2.exists()) {
                     System.out.println(parser.getArgs()[1] + " doesn't exist");
-                }
-                else{
+                } else {
                     System.out.println(parser.getArgs()[0] + " and " + parser.getArgs()[1] + " don't exist");
                 }
             }
         }
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will print the arguments passed to it
      */
     public void echo() throws IOException {
@@ -385,7 +404,8 @@ public class Terminal {
     }
 
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will print the history of the commands the user wrote
      *
      * @param historyArray the array list that contains the history of the commands
@@ -406,7 +426,8 @@ public class Terminal {
             writeToFile(finalStr.toString());
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will delete a file from the current directory
      */
     public void rm() {
@@ -433,7 +454,8 @@ public class Terminal {
         System.out.println("can't remove file: No such file or directory");
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will count the number of lines, words and characters in a file
      */
     void wc() throws IOException {
@@ -471,7 +493,8 @@ public class Terminal {
         System.out.println("No such file or directory");
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will copy the content of a file to another file
      */
     void cp() throws IOException {
@@ -532,7 +555,12 @@ public class Terminal {
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
         File searchFile = new File(parser.getArgs()[0]);
-        File file = new File(System.getProperty("user.dir") + "\\\\" + searchFile.getName());
+        File file;
+        if (searchFile.isAbsolute()) {
+            file = searchFile;
+        } else {
+            file = new File(System.getProperty("user.dir") + "\\\\" + searchFile.getName());
+        }
         //makes sure that the files in the directory the user is currently working on is not empty
         assert files != null;
         for (File f : files) {
@@ -545,7 +573,8 @@ public class Terminal {
         Files.createFile(newFile);
     }
 
-    /**_________________________________________________________________________
+    /**
+     * _________________________________________________________________________
      * This method will clear the content of a file
      * if the operator is ">" and the command returns nothing
      */
@@ -571,16 +600,24 @@ public class Terminal {
      * @throws IOException in case of an error in the file
      */
     void writeToFile(String content) throws IOException {
-        boolean append = parser.getOperator().equals(">>");
-        Path fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
-        if (append) {
-            String fullContent = Files.readString(fileName);
-            fullContent += content;
-            Files.writeString(fileName, fullContent);
+       
+            boolean append = parser.getOperator().equals(">>");
+            File file = new File(parser.getFileName());
+            Path fileName;
+            if (!file.isAbsolute())
+                fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+            else
+                fileName = Path.of(parser.getFileName());
 
-        } else {
-            Files.writeString(fileName, content);
-        }
+            if (append) {
+                String fullContent = Files.readString(fileName);
+                fullContent += content;
+                Files.writeString(fileName, fullContent);
+
+            } else {
+                Files.writeString(fileName, content);
+            }
+
     }
 
 

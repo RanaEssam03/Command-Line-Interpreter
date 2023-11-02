@@ -12,7 +12,7 @@ public enum Commands {
     history, // Done
     rm, // Done
     cat, // Done
-    //" >" TODO
+    //" >"  // Done
     wc, // Done
     cp,
     touch //Done
