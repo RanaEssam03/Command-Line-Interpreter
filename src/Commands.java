@@ -14,7 +14,8 @@ public enum Commands {
     cat, // Done
     //" >" TODO
     wc, // Done
-    cp
+    cp,
+    touch //Done
 
 }
 

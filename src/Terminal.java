@@ -2,6 +2,7 @@
 /// Last modification: 1/11/2023
 
 import java.io.*;
+import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -108,6 +109,9 @@ public class Terminal {
                     break;
                 case "cp":
                     cp();
+                    break;
+                case "touch":
+                    touch();
                     break;
                 default:
             }
@@ -386,15 +390,20 @@ public class Terminal {
      *
      * @param historyArray the array list that contains the history of the commands
      */
-    public void history(ArrayList<String> historyArray) {
+    public void history(ArrayList<String> historyArray) throws IOException {
         if (parser.getArgs().length > 0) {
             System.out.println("Invalid number of arguments, expected 0 arguments");
             return;
         }
+        StringBuilder finalStr = new StringBuilder();
         for (int i = 1; i <= historyArray.size(); i++) {
-            System.out.print(i + " ");
-            System.out.println(historyArray.get(i - 1));
+            finalStr.append(i).append(" ");
+            finalStr.append(historyArray.get(i - 1)).append("\n");
         }
+        if (parser.getFileName() == null)
+            System.out.println(finalStr);
+        else
+            writeToFile(finalStr.toString());
     }
 
     /**_________________________________________________________________________
@@ -402,7 +411,6 @@ public class Terminal {
      */
     public void rm() {
         CheckContentClearing();
-
         // checks for the number of arguments written
         if (parser.getArgs().length != 1) {
             System.out.println("Invalid number of arguments, expected 1 arguments");
@@ -420,7 +428,6 @@ public class Terminal {
                 if (del)
                     return;
             }
-
         }
         // else display that it has not been found/ does not exist
         System.out.println("can't remove file: No such file or directory");
@@ -429,8 +436,7 @@ public class Terminal {
     /**_________________________________________________________________________
      * This method will count the number of lines, words and characters in a file
      */
-    void wc() throws FileNotFoundException {
-
+    void wc() throws IOException {
         // checks for the number of arguments written
         if (parser.getArgs().length != 1) {
             System.out.println("Invalid number of arguments, expected 1 arguments");
@@ -442,6 +448,7 @@ public class Terminal {
         assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
         for (File f : files) {
             if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
+                String finalStr = "";
                 int countLines = 0, countWords = 0, countChars = 0;
                 Scanner sc = new Scanner(file);
                 while (sc.hasNextLine()) {
@@ -453,7 +460,11 @@ public class Terminal {
                         countChars += word.length();
                     }
                 }
-                System.out.println(countLines + " " + countWords + " " + countChars + " " + file.getName());
+                finalStr = (countLines + " " + countWords + " " + countChars + " " + file.getName() + "\n");
+                if (parser.getFileName() == null)
+                    System.out.println(finalStr);
+                else
+                    writeToFile(finalStr);
                 return;
             }
         }
@@ -508,6 +519,30 @@ public class Terminal {
         } else {
             System.out.println("None of the files exist");
         }
+    }
+
+    public void touch() throws IOException {
+        CheckContentClearing();
+        // checks for the number of arguments written
+        if (parser.getArgs().length != 1) {
+            System.out.println("Invalid number of arguments, expected 1 arguments");
+            return;
+        }
+        // touch ..\Admin\test100.txt
+        File currentDic = new File(System.getProperty("user.dir"));
+        File[] files = currentDic.listFiles();
+        File searchFile = new File(parser.getArgs()[0]);
+        File file = new File(System.getProperty("user.dir") + "\\\\" + searchFile.getName());
+        //makes sure that the files in the directory the user is currently working on is not empty
+        assert files != null;
+        for (File f : files) {
+            if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
+                System.out.println("This file already exists in this path");
+                return;
+            }
+        }
+        Path newFile = Paths.get(file.toURI());
+        Files.createFile(newFile);
     }
 
     /**_________________________________________________________________________
