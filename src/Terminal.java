@@ -1,5 +1,8 @@
+/// @author1: Rana Essam  20210133
+/// @author2 : Nour Mohamed 20210428
+/// @author3 : Noor Eyad   20210499
 /// Created on: 25/10/2023
-/// Last modification: 1/11/2023
+/// Last modification: 3/11/2023
 
 import java.io.*;
 import java.nio.file.Files;
@@ -31,20 +34,27 @@ public class Terminal {
      * @param args the arguments passed to the program
      */
     public static void main(String[] args) throws IOException {
+        try {
 
-        Terminal terminal = new Terminal();
-        ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
-        while (true) {
-            System.out.print(System.getProperty("user.dir") + " > ");
-            Scanner scanner = new Scanner(System.in);
-            String input = scanner.nextLine(); // here we get the input from the terminal
-            historyArray.add(input);
-            if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
-                break;
+            Terminal terminal = new Terminal();
+            ArrayList<String> historyArray = new ArrayList<>(); // array list that saves the commands the user writes
+            while (true) {
+                System.out.print(System.getProperty("user.dir") + " > ");
+                Scanner scanner = new Scanner(System.in);
+                String input = scanner.nextLine(); // here we get the input from the terminal
+                historyArray.add(input);
+                if (input.equals("exit")) // exit the program in case the user enters exit in the terminal
+                    break;
+                terminal.executeCommand(historyArray, input);
 
-            terminal.executeCommand(historyArray, input);
-
+            }
+        } catch (Exception e) {
+            if (e.getMessage() != null)
+                System.out.println(e.getMessage());
+            else
+                System.out.println("Something went wrong, try again!");
         }
+
 
     }
 
@@ -59,17 +69,22 @@ public class Terminal {
     public void executeCommand(ArrayList<String> historyArray, String command) throws IOException {
         if (parser.parse(command)) {
             if (parser.getFileName() != null) {
-                File file ;
-                File current =new File(parser.getFileName());
-                if(!current.isAbsolute())
+                File file;
+                File current = new File(parser.getFileName());
+                if (!current.isAbsolute())
                     file = new File(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
                 else
                     file = current;
-                if (!file.exists() && parser.getOperator().equals(">>")) {
-                    System.out.println("ERROR :  " + parser.getFileName() + " doesn't exists! ");
+                try {
+                    if (!file.exists() && parser.getOperator().equals(">>")) {
+                        System.out.println("ERROR :  " + parser.getFileName() + " doesn't exists! ");
+                        return;
+                    } else if (!file.exists() && parser.getOperator().equals(">")) {
+                        file.createNewFile();
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
                     return;
-                } else if (!file.exists() && parser.getOperator().equals(">")) {
-                    file.createNewFile();
                 }
             }
             // if the paring is done correctly then choose the suitable action else continue the program without any action after print an error message
@@ -124,8 +139,8 @@ public class Terminal {
                     break;
                 default:
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid command");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -241,9 +256,9 @@ public class Terminal {
             }
             File finalPath = new File(args[0]);
 
-            if(finalPath.isDirectory())
+            if (finalPath.isDirectory())
                 System.setProperty("user.dir", args[0]);
-            else{
+            else {
                 System.out.println("ERROR: Invalid Directory!");
             }
         }
@@ -439,19 +454,23 @@ public class Terminal {
         }
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
-        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        File file = new File(parser.getArgs()[0]);
+        if (!file.isAbsolute()) {
+            file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        }
         //makes sure that the files in the directory the user is currently working on is not empty
         assert files != null;
         boolean del = false;
-        for (File f : files) {
-            if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
-                del = f.delete();
-                if (del)
-                    return;
-            }
+        if (file.exists() && !file.isDirectory()) {
+            del = file.delete();
+            if (del)
+                return;
+            else
+                throw new RuntimeException();
         }
+
         // else display that it has not been found/ does not exist
-        System.out.println("can't remove file: No such file or directory");
+        System.out.println("can't remove file: No such file ");
     }
 
     /**
@@ -465,30 +484,35 @@ public class Terminal {
             return;
         }
         File currentDic = new File(System.getProperty("user.dir"));
+
         File[] files = currentDic.listFiles();
-        File file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        File file = new File(parser.getArgs()[0]);
+        if (!file.isAbsolute()) {
+            file = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        }
         assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
-        for (File f : files) {
-            if (f.getAbsolutePath().equals(file.getAbsolutePath())) {
-                String finalStr = "";
-                int countLines = 0, countWords = 0, countChars = 0;
-                Scanner sc = new Scanner(file);
-                while (sc.hasNextLine()) {
-                    String line = sc.nextLine();
-                    countLines++;
-                    String[] words = line.split(" ");
-                    countWords += words.length;
-                    for (String word : words) {
-                        countChars += word.length();
-                    }
+        if (file.exists() && !file.isDirectory()) {
+            String finalStr = "";
+            int countLines = 0, countWords = 0, countChars = 0;
+            Scanner sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                countLines++;
+                String[] words = line.split(" ");
+                countWords += words.length;
+                for (String word : words) {
+                    countChars += word.length();
                 }
-                finalStr = (countLines + " " + countWords + " " + countChars + " " + file.getName() + "\n");
-                if (parser.getFileName() == null)
-                    System.out.println(finalStr);
-                else
-                    writeToFile(finalStr);
-                return;
             }
+            finalStr = (countLines + " " + countWords + " " + countChars + " " + file.getName() + "\n");
+            sc.close();
+
+            if (parser.getFileName() == null)
+                System.out.println(finalStr);
+            else
+                writeToFile(finalStr);
+            return;
+
         }
         System.out.println("No such file or directory");
     }
@@ -506,18 +530,24 @@ public class Terminal {
         }
         File currentDic = new File(System.getProperty("user.dir"));
         File[] files = currentDic.listFiles();
-        File file1 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
-        File file2 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[1]);
+
+        File file1 = new File(parser.getArgs()[0]);
+        if (!file1.isAbsolute())
+            file1 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[0]);
+        File file2 = new File(parser.getArgs()[1]);
+        if (!file2.isAbsolute())
+            file2 = new File(System.getProperty("user.dir") + "\\\\" + parser.getArgs()[1]);
         assert files != null; //makes sure that the files in the directory the user is currently working on is not empty
         boolean f1 = false, f2 = false;
-        for (File f : files) {
-            if (f.getAbsolutePath().equals(file1.getAbsolutePath())) {
-                f1 = true;
-            }
-            if (f.getAbsolutePath().equals(file2.getAbsolutePath())) {
-                f2 = true;
-            }
+
+        if (file1.exists() && !file1.isDirectory()) {
+            f1 = true;
         }
+
+        if (file2.exists() && !file2.isDirectory()) {
+            f2 = true;
+        }
+
         if (f1 && f2) {
             FileInputStream inFile = new FileInputStream(file1);
             FileOutputStream outFile = new FileOutputStream(file2);
@@ -600,23 +630,23 @@ public class Terminal {
      * @throws IOException in case of an error in the file
      */
     void writeToFile(String content) throws IOException {
-       
-            boolean append = parser.getOperator().equals(">>");
-            File file = new File(parser.getFileName());
-            Path fileName;
-            if (!file.isAbsolute())
-                fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
-            else
-                fileName = Path.of(parser.getFileName());
 
-            if (append) {
-                String fullContent = Files.readString(fileName);
-                fullContent += content;
-                Files.writeString(fileName, fullContent);
+        boolean append = parser.getOperator().equals(">>");
+        File file = new File(parser.getFileName());
+        Path fileName;
+        if (!file.isAbsolute())
+            fileName = Path.of(System.getProperty("user.dir") + "\\\\" + parser.getFileName());
+        else
+            fileName = Path.of(parser.getFileName());
 
-            } else {
-                Files.writeString(fileName, content);
-            }
+        if (append) {
+            String fullContent = Files.readString(fileName);
+            fullContent += content;
+            Files.writeString(fileName, fullContent);
+
+        } else {
+            Files.writeString(fileName, content);
+        }
 
     }
 
