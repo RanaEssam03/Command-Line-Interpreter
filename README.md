@@ -4,7 +4,6 @@
 This is a command line interpreter that can be used to execute commands from the command line. It is written in Java.
 ### It supports the following commands:
 * `cd` - change directory
-* `clr` - clear the screen
 * `echo` - display a line of text
 * `history` - display the history of commands entered
 * `cp` - copy a file
@@ -17,6 +16,7 @@ This is a command line interpreter that can be used to execute commands from the
 * `>>` - redirect output to a file
 * `>` - redirect output to a file
 * `pwd` - print the current working directory
+* `wc` - count the number of lines, words, and characters in a file
 * `exit` - exit the shell
 
 ## Usage
