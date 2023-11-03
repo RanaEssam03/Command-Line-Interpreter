@@ -1,7 +1,8 @@
 # Command-Line-Interpreter
 
 ## Description
-This is a command line interpreter that can be used to execute commands from the command line. It is written in Java  . It supports the following commands:
+This is a command line interpreter that can be used to execute commands from the command line. It is written in Java.
+### It supports the following commands:
 * `cd` - change directory
 * `clr` - clear the screen
 * `echo` - display a line of text
