@@ -1,7 +1,8 @@
 # Command-Line-Interpreter
 
 ## Description
-This is a command line interpreter that can be used to execute commands from the command line. It is written in Java.
+This is a command line interpreter (CLI) that allows users to interact with a computer system using text commands. It provides a simple and efficient way to perform common tasks, such as navigating the file system, managing files, and launching applications.
+
 ### It supports the following commands:
 * `cd` - change directory
 * `echo` - display a line of text
