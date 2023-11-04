@@ -23,7 +23,7 @@ This is a command line interpreter (CLI) that allows users to interact with a co
 ## Usage
 To run the program, first compile the source code using the following command:
 ```
-javac Terminal.java
+javac Terminal.java Parser.java Commands.java
 ```
 Then, run the program using the following command:
 ```
